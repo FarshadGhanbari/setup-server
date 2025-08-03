@@ -39,6 +39,36 @@ if ! command -v certbot >/dev/null 2>&1; then
     apt install -y certbot
 fi
 
+# نصب xenz در مسیر قابل دسترسی
+cat << 'EOF' > /usr/local/bin/xenz
+#!/bin/bash
+
+set -euo pipefail
+
+show_menu() {
+    echo ""
+    echo -e "\e[1;36m======= XENZ TOOL MENU =======\e[0m"
+    echo "1) GitHub Auth Login"
+    echo "2) Certbot Renew"
+    echo "3) Docker Info"
+    echo "4) Exit"
+    echo ""
+    read -rp "انتخاب کن: " choice
+
+    case $choice in
+        1) gh auth login ;;
+        2) certbot renew ;;
+        3) docker info ;;
+        4) echo "خروج" && exit 0 ;;
+        *) echo "گزینه نامعتبر!" && show_menu ;;
+    esac
+}
+
+show_menu
+EOF
+
+chmod +x /usr/local/bin/xenz
+
 echo ""
 echo -e "\e[1;32m✅ نصب با موفقیت انجام شد\e[0m"
 echo ""
@@ -47,4 +77,5 @@ echo -e "\e[1;34m👉 Docker Compose:\e[0m $(docker compose version)"
 echo -e "\e[1;34m👉 Docker Buildx:\e[0m $(docker buildx version)"
 echo -e "\e[1;34m👉 GitHub CLI:\e[0m $(gh --version | head -n1)"
 echo -e "\e[1;34m👉 Certbot:\e[0m $(certbot --version)"
+echo -e "\e[1;34m👉 Xenz Command:\e[0m تایپ کن \e[1;33mxenz\e[0m برای منوی ابزار"
 echo ""
