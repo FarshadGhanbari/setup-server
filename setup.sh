@@ -40,7 +40,7 @@ if ! command -v certbot >/dev/null 2>&1; then
 fi
 
 # Install 'xenz' menu command
-cat << 'EOF' > /usr/local/bin/xenz
+cat << 'EOF' | sudo tee /usr/local/bin/xenz > /dev/null
 #!/bin/bash
 
 set -euo pipefail
@@ -67,15 +67,4 @@ show_menu() {
 show_menu
 EOF
 
-chmod +x /usr/local/bin/xenz
-
-echo ""
-echo -e "\e[1;32m✅ Installation completed successfully\e[0m"
-echo ""
-echo -e "\e[1;34mDocker:\e[0m $(docker --version)"
-echo -e "\e[1;34mDocker Compose:\e[0m $(docker compose version)"
-echo -e "\e[1;34mDocker Buildx:\e[0m $(docker buildx version)"
-echo -e "\e[1;34mGitHub CLI:\e[0m $(gh --version | head -n1)"
-echo -e "\e[1;34mCertbot:\e[0m $(certbot --version)"
-echo -e "\e[1;34mXenz:\e[0m Run \e[1;33mxenz\e[0m to open the tool menu"
-echo ""
+sudo chmod +x /usr/local/bin/xenz
