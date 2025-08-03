@@ -40,9 +40,8 @@ if ! command -v certbot >/dev/null 2>&1; then
 fi
 
 # Install 'xenz' menu command
-cat << 'EOF' | sudo tee /usr/local/bin/xenz > /dev/null
+sudo tee /usr/local/bin/xenz > /dev/null <<'EOF'
 #!/bin/bash
-
 set -euo pipefail
 
 show_menu() {
@@ -54,7 +53,6 @@ show_menu() {
     echo "4) Exit"
     echo ""
     read -rp "Select an option: " choice
-
     case $choice in
         1) gh auth login ;;
         2) certbot renew ;;
