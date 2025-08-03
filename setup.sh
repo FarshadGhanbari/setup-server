@@ -62,14 +62,19 @@ sudo tee /usr/local/bin/xenz > /dev/null <<'EOF'
 #!/bin/bash
 set -euo pipefail
 
+PROJECT_FILE="$HOME/.xenz-project"
+
 show_menu() {
     echo ""
     echo -e "\e[1;36m=== XENZ TOOL MENU ===\e[0m"
     echo "1) GitHub Auth Login"
     echo "2) Renew SSL (Certbot)"
     echo "3) Issue SSL for Domain (Certbot)"
-    echo "4) Docker Info"
-    echo "5) Exit"
+    echo "4) Install Project"
+    echo "5) Update Project"
+    echo "6) Update DB"
+    echo "7) Docker Info"
+    echo "8) Exit"
     echo ""
     read -rp "Select an option: " choice
     case $choice in
@@ -88,9 +93,32 @@ show_menu() {
             certbot certonly --standalone -d "$DOMAIN" -d "www.$DOMAIN" --agree-tos --email eng.ghanbari2025@gmail.com
             ;;
         4)
-            docker info
+            read -rp "Enter project name (GitHub repo): " PROJECT
+            if [[ -z "$PROJECT" ]]; then
+                echo "❌ Project name is required"
+                exit 1
+            fi
+            echo "$PROJECT" > "$PROJECT_FILE"
+            git clone "https://github.com/FarshadGhanbari/$PROJECT.git" && cd "$PROJECT"
+            docker compose -f prod.docker-compose.yml up -d --build --remove-orphans
             ;;
         5)
+            if [[ ! -f "$PROJECT_FILE" ]]; then
+                echo "❌ No installed project found. Please run Install Project first."
+                exit 1
+            fi
+            PROJECT=$(cat "$PROJECT_FILE")
+            cd "$HOME/$PROJECT"
+            git pull
+            docker compose -f prod.docker-compose.yml up -d --build --remove-orphans
+            ;;
+        6)
+            docker exec -it laravel php artisan db:fresh-seed
+            ;;
+        7)
+            docker info
+            ;;
+        8)
             echo "Goodbye." && exit 0
             ;;
         *)
