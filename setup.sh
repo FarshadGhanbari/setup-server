@@ -67,16 +67,35 @@ show_menu() {
     echo -e "\e[1;36m=== XENZ TOOL MENU ===\e[0m"
     echo "1) GitHub Auth Login"
     echo "2) Renew SSL (Certbot)"
-    echo "3) Docker Info"
-    echo "4) Exit"
+    echo "3) Issue SSL for Domain (Certbot)"
+    echo "4) Docker Info"
+    echo "5) Exit"
     echo ""
     read -rp "Select an option: " choice
     case $choice in
-        1) gh auth login ;;
-        2) certbot renew ;;
-        3) docker info ;;
-        4) echo "Goodbye." && exit 0 ;;
-        *) echo "Invalid option." && show_menu ;;
+        1)
+            gh auth login
+            ;;
+        2)
+            certbot renew
+            ;;
+        3)
+            read -rp "Enter your domain (e.g. example.com): " DOMAIN
+            if [[ -z "$DOMAIN" ]]; then
+                echo "❌ Domain is required"
+                exit 1
+            fi
+            certbot certonly --standalone -d "$DOMAIN" -d "www.$DOMAIN" --agree-tos --email eng.ghanbari2025@gmail.com
+            ;;
+        4)
+            docker info
+            ;;
+        5)
+            echo "Goodbye." && exit 0
+            ;;
+        *)
+            echo "Invalid option." && show_menu
+            ;;
     esac
 }
 
