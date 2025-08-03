@@ -2,7 +2,11 @@
 
 set -euo pipefail
 
-# Final summary on exit
+log_error() {
+    echo -e "\n\e[1;31m❌ Error on line $1. Exit code: $2\e[0m\n"
+}
+trap 'log_error $LINENO $?' ERR
+
 final_summary() {
     echo ""
     echo -e "\e[1;32m✅ Installation completed successfully\e[0m"
@@ -17,8 +21,8 @@ final_summary() {
 }
 trap final_summary EXIT
 
-# Ensure required base packages
 apt update -y
+
 apt install -y \
     ca-certificates \
     curl \
@@ -26,7 +30,6 @@ apt install -y \
     lsb-release \
     software-properties-common
 
-# Docker installation
 if ! command -v docker >/dev/null 2>&1; then
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/trusted.gpg.d/docker.gpg
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/trusted.gpg.d/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
@@ -34,7 +37,6 @@ if ! command -v docker >/dev/null 2>&1; then
     apt install -y docker-ce docker-ce-cli containerd.io
 fi
 
-# Docker Compose CLI plugin
 if ! docker compose version >/dev/null 2>&1; then
     DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
     mkdir -p "$DOCKER_CONFIG/cli-plugins"
@@ -42,24 +44,20 @@ if ! docker compose version >/dev/null 2>&1; then
     chmod +x "$DOCKER_CONFIG/cli-plugins/docker-compose"
 fi
 
-# Docker Buildx CLI plugin
 if ! docker buildx version >/dev/null 2>&1; then
     mkdir -p ~/.docker/cli-plugins
     curl -SL "https://github.com/docker/buildx/releases/latest/download/buildx-$(uname -s)-$(uname -m)" -o ~/.docker/cli-plugins/docker-buildx
     chmod +x ~/.docker/cli-plugins/docker-buildx
 fi
 
-# GitHub CLI
 if ! command -v gh >/dev/null 2>&1; then
     apt install -y gh
 fi
 
-# Certbot
 if ! command -v certbot >/dev/null 2>&1; then
     apt install -y certbot
 fi
 
-# Install or overwrite 'xenz' command
 sudo tee /usr/local/bin/xenz > /dev/null <<'EOF'
 #!/bin/bash
 set -euo pipefail
