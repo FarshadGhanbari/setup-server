@@ -22,29 +22,32 @@ final_summary() {
 trap final_summary EXIT
 
 apt update -y
-apt install -y ca-certificates curl gnupg lsb-release
 
-# Detect distro (Debian vs Ubuntu)
-DISTRO=$(lsb_release -is | tr '[:upper:]' '[:lower:]')
-CODENAME=$(lsb_release -cs)
+apt install -y \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release \
+    software-properties-common
 
 if ! command -v docker >/dev/null 2>&1; then
-    install -m 0755 -d /etc/apt/keyrings
-    if [[ "$DISTRO" == "debian" ]]; then
-        curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $CODENAME stable" \
-          | tee /etc/apt/sources.list.d/docker.list > /dev/null
-    elif [[ "$DISTRO" == "ubuntu" ]]; then
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $CODENAME stable" \
-          | tee /etc/apt/sources.list.d/docker.list > /dev/null
-    else
-        echo "❌ Unsupported distro: $DISTRO"
-        exit 1
-    fi
-
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/trusted.gpg.d/docker.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/trusted.gpg.d/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
     apt update -y
-    apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    apt install -y docker-ce docker-ce-cli containerd.io
+fi
+
+if ! docker compose version >/dev/null 2>&1; then
+    DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
+    mkdir -p "$DOCKER_CONFIG/cli-plugins"
+    curl -SL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o "$DOCKER_CONFIG/cli-plugins/docker-compose"
+    chmod +x "$DOCKER_CONFIG/cli-plugins/docker-compose"
+fi
+
+if ! docker buildx version >/dev/null 2>&1; then
+    mkdir -p ~/.docker/cli-plugins
+    curl -SL "https://github.com/docker/buildx/releases/latest/download/buildx-$(uname -s)-$(uname -m)" -o ~/.docker/cli-plugins/docker-buildx
+    chmod +x ~/.docker/cli-plugins/docker-buildx
 fi
 
 if ! command -v gh >/dev/null 2>&1; then
@@ -55,7 +58,6 @@ if ! command -v certbot >/dev/null 2>&1; then
     apt install -y certbot
 fi
 
-# Xenz tool installer
 sudo tee /usr/local/bin/xenz > /dev/null <<'EOF'
 #!/bin/bash
 set -euo pipefail
@@ -76,31 +78,52 @@ show_menu() {
     echo ""
     read -rp "Select an option: " choice
     case $choice in
-        1) gh auth login ;;
-        2) certbot renew ;;
+        1)
+            gh auth login
+            ;;
+        2)
+            certbot renew
+            ;;
         3)
             read -rp "Enter your domain (e.g. example.com): " DOMAIN
-            [[ -z "$DOMAIN" ]] && echo "❌ Domain is required" && exit 1
-            certbot certonly --standalone -d "$DOMAIN" -d "www.$DOMAIN" --agree-tos --email you@example.com
+            if [[ -z "$DOMAIN" ]]; then
+                echo "❌ Domain is required"
+                exit 1
+            fi
+            certbot certonly --standalone -d "$DOMAIN" -d "www.$DOMAIN" --agree-tos --email eng.ghanbari2025@gmail.com
             ;;
         4)
             read -rp "Enter project name (GitHub repo): " PROJECT
-            [[ -z "$PROJECT" ]] && echo "❌ Project name is required" && exit 1
+            if [[ -z "$PROJECT" ]]; then
+                echo "❌ Project name is required"
+                exit 1
+            fi
             echo "$PROJECT" > "$PROJECT_FILE"
             git clone "https://github.com/FarshadGhanbari/$PROJECT.git" && cd "$PROJECT"
             docker compose -f prod.docker-compose.yml up -d --build --remove-orphans
             ;;
         5)
-            [[ ! -f "$PROJECT_FILE" ]] && echo "❌ No installed project found." && exit 1
+            if [[ ! -f "$PROJECT_FILE" ]]; then
+                echo "❌ No installed project found. Please run Install Project first."
+                exit 1
+            fi
             PROJECT=$(cat "$PROJECT_FILE")
             cd "$HOME/$PROJECT"
             git pull
             docker compose -f prod.docker-compose.yml up -d --build --remove-orphans
             ;;
-        6) docker exec -it laravel php artisan db:fresh-seed ;;
-        7) docker info ;;
-        8) echo "Goodbye." && exit 0 ;;
-        *) echo "Invalid option." && show_menu ;;
+        6)
+            docker exec -it laravel php artisan db:fresh-seed
+            ;;
+        7)
+            docker info
+            ;;
+        8)
+            echo "Goodbye." && exit 0
+            ;;
+        *)
+            echo "Invalid option." && show_menu
+            ;;
     esac
 }
 
