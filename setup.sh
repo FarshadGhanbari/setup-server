@@ -441,4 +441,3 @@ done
 EOF
 
 sudo chmod +x /usr/local/bin/xenz
-
