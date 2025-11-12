@@ -384,6 +384,57 @@ renew_ssl() {
     certbot renew --quiet && log_success "SSL certificates renewed" || { log_error "SSL renewal failed"; return 1; }
 }
 
+list_ssl_certificates() {
+    log_info "Fetching SSL certificates..."
+    local certs=$(certbot certificates 2>/dev/null)
+    if [[ -z "$certs" ]]; then
+        log_warn "No SSL certificates found"
+        return 1
+    fi
+    echo -e "${CYAN}=== SSL Certificates ===${NC}"
+    echo ""
+    local cert_name=""
+    local domains=""
+    local expiry=""
+    local days_left=""
+    
+    certbot certificates 2>/dev/null | while IFS= read -r line; do
+        if [[ "$line" =~ Certificate\ Name: ]]; then
+            [[ -n "$cert_name" ]] && echo ""
+            cert_name=$(echo "$line" | sed 's/Certificate Name://' | xargs)
+            echo -e "${BLUE}Certificate Name:${NC} ${YELLOW}$cert_name${NC}"
+        elif [[ "$line" =~ Domains: ]]; then
+            domains=$(echo "$line" | sed 's/Domains://' | xargs)
+            echo -e "${BLUE}Domains:${NC} ${GREEN}$domains${NC}"
+        elif [[ "$line" =~ Expiry\ Date: ]]; then
+            expiry=$(echo "$line" | sed 's/Expiry Date://' | xargs)
+            echo -e "${BLUE}Expiry Date:${NC} ${YELLOW}$expiry${NC}"
+            if [[ "$expiry" =~ \(VALID:\ ([0-9]+)\ days\) ]]; then
+                days_left="${BASH_REMATCH[1]}"
+                if [[ -n "$days_left" ]]; then
+                    if [[ $days_left -lt 30 ]]; then
+                        echo -e "${RED}  ⚠ Warning: Certificate expires in $days_left days!${NC}"
+                    elif [[ $days_left -lt 60 ]]; then
+                        echo -e "${YELLOW}  ⚠ Certificate expires in $days_left days${NC}"
+                    else
+                        echo -e "${GREEN}  ✓ Certificate valid for $days_left more days${NC}"
+                    fi
+                fi
+            fi
+        elif [[ "$line" =~ Certificate\ Path: ]]; then
+            local cert_path=$(echo "$line" | sed 's/Certificate Path://' | xargs)
+            echo -e "${CYAN}Certificate Path:${NC} $cert_path"
+        elif [[ "$line" =~ Private\ Key\ Path: ]]; then
+            local key_path=$(echo "$line" | sed 's/Private Key Path://' | xargs)
+            echo -e "${CYAN}Private Key Path:${NC} $key_path"
+        elif [[ "$line" =~ ^-+$ ]]; then
+            echo ""
+        fi
+    done
+    echo ""
+    log_success "SSL certificates listed"
+}
+
 issue_ssl() {
     read -rp "Enter domain (e.g. example.com): " domain
     [[ -z "$domain" ]] && { log_error "Domain is required"; return 1; }
@@ -472,78 +523,57 @@ show_menu() {
     clear
     echo ""
     echo -e "${CYAN}╔════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║${NC}                                                            ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}                                                            ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}              ${YELLOW}╔═══════════════════════════════╗${NC}              ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}                               ${YELLOW}║${NC}              ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}         ${BLUE}╔═══╗╔═══╗╔╗   ╔╗╔═══╗${NC}         ${YELLOW}║${NC}              ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}         ${BLUE}║╔═╗║║╔═╗║║║   ║║║╔═╗║${NC}         ${YELLOW}║${NC}              ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}         ${BLUE}║║ ║║║║ ╚╝║║   ║║║║ ║║${NC}         ${YELLOW}║${NC}              ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}         ${BLUE}║║ ║║║║ ╔╗║║   ║║║║ ║║${NC}         ${YELLOW}║${NC}              ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}         ${BLUE}║╚═╝║║╚═╝║║╚═╗║╚═╝║╚═╝║${NC}         ${YELLOW}║${NC}              ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}         ${BLUE}╚═══╝╚═══╝╚══╝╚═══╝╚═══╝${NC}         ${YELLOW}║${NC}              ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}                               ${YELLOW}║${NC}              ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}         ${BLUE}Server Management Tool${NC}         ${YELLOW}║${NC}              ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}                               ${YELLOW}║${NC}              ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}              ${YELLOW}╚═══════════════════════════════╝${NC}              ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}                                                            ${CYAN}║${NC}"
-    echo -e "${CYAN}╠════════════════════════════════════════════════════════════╣${NC}"
-    echo -e "${CYAN}║${NC}                                                            ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}┌─ GitHub & SSL${NC}                                           ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}│${NC}  ${GREEN}1)${NC} GitHub Auth Login                                    ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}│${NC}  ${GREEN}2)${NC} Renew SSL (Certbot)                                 ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}│${NC}  ${GREEN}3)${NC} Issue SSL for Domain                                 ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}└───────────────────────────────────────────────────────────${NC}  ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}                                                            ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}┌─ Project Management${NC}                                    ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}│${NC}  ${GREEN}4)${NC} Install Project                                      ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}│${NC}  ${GREEN}5)${NC} Update Project                                       ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}│${NC}  ${GREEN}6)${NC} Backup Project                                       ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}│${NC}  ${GREEN}7)${NC} Restore Backup                                      ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}│${NC}  ${GREEN}8)${NC} List Backups                                        ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}│${NC}  ${GREEN}9)${NC} Delete All Backups                                   ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}└───────────────────────────────────────────────────────────${NC}  ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}                                                            ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}┌─ Database${NC}                                               ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}│${NC}  ${GREEN}10)${NC} Update DB (Fresh Seed)                              ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}└───────────────────────────────────────────────────────────${NC}  ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}                                                            ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}┌─ Monitoring${NC}                                             ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}│${NC}  ${GREEN}11)${NC} Health Check                                        ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}│${NC}  ${GREEN}12)${NC} View Logs                                           ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}│${NC}  ${GREEN}13)${NC} System Stats                                        ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}└───────────────────────────────────────────────────────────${NC}  ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}                                                            ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}┌─ Docker${NC}                                                 ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}│${NC}  ${GREEN}14)${NC} Docker Info                                         ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}│${NC}  ${GREEN}15)${NC} View Logs                                           ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}│${NC}  ${GREEN}16)${NC} Cleanup (Remove unused images/volumes)             ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${BLUE}└───────────────────────────────────────────────────────────${NC}  ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}                                                            ${CYAN}║${NC}"
-    echo -e "${CYAN}╠════════════════════════════════════════════════════════════╣${NC}"
-    echo -e "${CYAN}║${NC}                                                            ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  ${YELLOW}▶${NC}  ${YELLOW}0)${NC} Exit                                                  ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}                                                            ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}                    ${YELLOW}XENZ TOOL MENU${NC}                    ${CYAN}║${NC}"
     echo -e "${CYAN}╚════════════════════════════════════════════════════════════╝${NC}"
     echo ""
-    read -rp "$(echo -e ${CYAN}Select option${NC} ${YELLOW}[0-16]${NC}${CYAN}:${NC} ) " choice
+    echo -e "${BLUE}GitHub & SSL:${NC}"
+    echo "  1) GitHub Auth Login"
+    echo "  2) Renew SSL (Certbot)"
+    echo "  3) Issue SSL for Domain"
+    echo "  4) List SSL Certificates"
+    echo ""
+    echo -e "${BLUE}Project Management:${NC}"
+    echo "  5) Install Project"
+    echo "  6) Update Project"
+    echo "  7) Backup Project"
+    echo "  8) Restore Backup"
+    echo "  9) List Backups"
+    echo " 10) Delete All Backups"
+    echo ""
+    echo -e "${BLUE}Database:${NC}"
+    echo " 11) Update DB (Fresh Seed)"
+    echo ""
+    echo -e "${BLUE}Monitoring:${NC}"
+    echo " 12) Health Check"
+    echo " 13) View Logs"
+    echo " 14) System Stats"
+    echo ""
+    echo -e "${BLUE}Docker:${NC}"
+    echo " 15) Docker Info"
+    echo " 16) View Logs"
+    echo " 17) Cleanup (Remove unused images/volumes)"
+    echo ""
+    echo -e "${YELLOW} 0) Exit${NC}"
+    echo ""
+    read -rp "Select option: " choice
     case $choice in
         1) github_auth && pause ;;
         2) renew_ssl && pause ;;
         3) issue_ssl && pause ;;
-        4) install_project && pause ;;
-        5) update_project && pause ;;
-        6) backup_project && pause ;;
-        7) restore_backup && pause ;;
-        8) list_backups && pause ;;
-        9) delete_all_backups && pause ;;
-        10) update_db && pause ;;
-        11) health_check && pause ;;
-        12) show_logs ;;
-        13) show_stats && pause ;;
-        14) docker_info && pause ;;
-        15) show_logs ;;
-        16) cleanup_docker && pause ;;
+        4) list_ssl_certificates && pause ;;
+        5) install_project && pause ;;
+        6) update_project && pause ;;
+        7) backup_project && pause ;;
+        8) restore_backup && pause ;;
+        9) list_backups && pause ;;
+        10) delete_all_backups && pause ;;
+        11) update_db && pause ;;
+        12) health_check && pause ;;
+        13) show_logs ;;
+        14) show_stats && pause ;;
+        15) docker_info && pause ;;
+        16) show_logs ;;
+        17) cleanup_docker && pause ;;
         0) echo -e "${GREEN}Goodbye!${NC}" && exit 0 ;;
         *) log_error "Invalid option" && sleep 1 ;;
     esac
