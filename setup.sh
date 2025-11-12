@@ -473,14 +473,19 @@ show_menu() {
     echo ""
     echo -e "${CYAN}╔════════════════════════════════════════════════════════════╗${NC}"
     echo -e "${CYAN}║${NC}                                                            ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}                    ${YELLOW}╔═══╗╔═══╗╔╗   ╔╗╔═══╗╔═══╗${NC}                    ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}                    ${YELLOW}║╔═╗║║╔═╗║║║   ║║║╔═╗║║╔═╗║${NC}                    ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}                    ${YELLOW}║║ ║║║║ ╚╝║║   ║║║║ ║║║╚═╝║${NC}                    ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}                    ${YELLOW}║╚═╝║║║ ╔╗║║   ║║║║ ║║║╔╗╔╝${NC}                    ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}                    ${YELLOW}║╔═╗║║╚═╝║║╚═╗║╚═╝║╚═╝║║║║╚╗${NC}                    ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}                    ${YELLOW}╚╝ ╚╝╚═══╝╚══╝╚═══╝╚═══╝╚╝╚═╝${NC}                    ${CYAN}║${NC}"
     echo -e "${CYAN}║${NC}                                                            ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}                         ${BLUE}Server Management Tool${NC}                        ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}              ${YELLOW}╔═══════════════════════════════╗${NC}              ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}                               ${YELLOW}║${NC}              ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}         ${BLUE}╔═══╗╔═══╗╔╗   ╔╗╔═══╗${NC}         ${YELLOW}║${NC}              ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}         ${BLUE}║╔═╗║║╔═╗║║║   ║║║╔═╗║${NC}         ${YELLOW}║${NC}              ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}         ${BLUE}║║ ║║║║ ╚╝║║   ║║║║ ║║${NC}         ${YELLOW}║${NC}              ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}         ${BLUE}║║ ║║║║ ╔╗║║   ║║║║ ║║${NC}         ${YELLOW}║${NC}              ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}         ${BLUE}║╚═╝║║╚═╝║║╚═╗║╚═╝║╚═╝║${NC}         ${YELLOW}║${NC}              ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}         ${BLUE}╚═══╝╚═══╝╚══╝╚═══╝╚═══╝${NC}         ${YELLOW}║${NC}              ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}                               ${YELLOW}║${NC}              ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}         ${BLUE}Server Management Tool${NC}         ${YELLOW}║${NC}              ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}              ${YELLOW}║${NC}                               ${YELLOW}║${NC}              ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}              ${YELLOW}╚═══════════════════════════════╝${NC}              ${CYAN}║${NC}"
     echo -e "${CYAN}║${NC}                                                            ${CYAN}║${NC}"
     echo -e "${CYAN}╠════════════════════════════════════════════════════════════╣${NC}"
     echo -e "${CYAN}║${NC}                                                            ${CYAN}║${NC}"
@@ -549,7 +554,7 @@ pause() {
 }
 
 while true; do
-    show_menu
+show_menu
 done
 EOF
 
