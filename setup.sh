@@ -239,16 +239,107 @@ backup_project() {
 }
 
 restore_backup() {
+    shopt -s nullglob
     local backups=("$BACKUP_DIR"/*.tar.gz)
+    shopt -u nullglob
     [[ ${#backups[@]} -gt 0 ]] || { log_error "No backups found"; return 1; }
     echo -e "${CYAN}Available backups:${NC}"
-    select backup in "${backups[@]}" "Cancel"; do
-        [[ "$backup" == "Cancel" ]] && return 0
+    echo ""
+    local i=1
+    local backup_list=()
+    for backup in "${backups[@]}"; do
         [[ -f "$backup" ]] || continue
+        local size=$(du -h "$backup" 2>/dev/null | cut -f1 || echo "N/A")
+        local date=$(stat -c %y "$backup" 2>/dev/null | cut -d' ' -f1 || stat -f %Sm -t "%Y-%m-%d" "$backup" 2>/dev/null || ls -l "$backup" 2>/dev/null | awk '{print $6, $7, $8}' || echo "N/A")
+        echo -e "  ${BLUE}$i)${NC} $(basename "$backup") - ${YELLOW}$size${NC} - ${CYAN}$date${NC}"
+        backup_list+=("$backup")
+        ((i++))
+    done
+    [[ ${#backup_list[@]} -eq 0 ]] && { log_error "No valid backups found"; return 1; }
+    echo ""
+    PS3="Select backup to restore: "
+    select backup in "${backup_list[@]}" "Cancel"; do
+        [[ "$backup" == "Cancel" ]] && { PS3=""; return 0; }
+        [[ -z "$backup" ]] && { log_error "Invalid selection"; PS3=""; return 1; }
+        [[ -f "$backup" ]] || { log_error "Backup file not found"; PS3=""; return 1; }
+        read -rp "Restore from $(basename "$backup")? (y/N): " confirm
+        [[ "$confirm" != "y" && "$confirm" != "Y" ]] && { PS3=""; return 0; }
         log_info "Restoring from: $(basename "$backup")"
-        tar -xzf "$backup" -C "$HOME" && log_success "Backup restored" || { log_error "Restore failed"; return 1; }
+        tar -xzf "$backup" -C "$HOME" && log_success "Backup restored successfully" || { log_error "Restore failed"; PS3=""; return 1; }
+        PS3=""
         break
     done
+}
+
+list_backups() {
+    shopt -s nullglob
+    local backups=("$BACKUP_DIR"/*.tar.gz)
+    shopt -u nullglob
+    [[ ${#backups[@]} -gt 0 ]] || { log_info "No backups found"; return 1; }
+    echo -e "${CYAN}=== Backup List ===${NC}"
+    echo ""
+    local total_size=0
+    local count=0
+    for backup in "${backups[@]}"; do
+        [[ -f "$backup" ]] || continue
+        local size=$(du -b "$backup" 2>/dev/null | cut -f1 || echo "0")
+        local size_h=$(du -h "$backup" 2>/dev/null | cut -f1 || echo "N/A")
+        local date=$(stat -c %y "$backup" 2>/dev/null | cut -d' ' -f1 || stat -f %Sm -t "%Y-%m-%d %H:%M" "$backup" 2>/dev/null || ls -l "$backup" 2>/dev/null | awk '{print $6, $7, $8}' || echo "N/A")
+        echo -e "  ${BLUE}$(basename "$backup")${NC}"
+        echo -e "    Size: ${YELLOW}$size_h${NC} | Date: ${CYAN}$date${NC}"
+        total_size=$((total_size + size))
+        ((count++))
+    done
+    echo ""
+    local total_size_mb=$((total_size / 1024 / 1024))
+    local total_size_gb=$((total_size / 1024 / 1024 / 1024))
+    local total_size_h
+    if [[ $total_size_gb -gt 0 ]]; then
+        total_size_h="${total_size_gb}GB"
+    elif [[ $total_size_mb -gt 0 ]]; then
+        total_size_h="${total_size_mb}MB"
+    else
+        total_size_h="$((total_size / 1024))KB"
+    fi
+    echo -e "Total: ${GREEN}$count${NC} backups | ${GREEN}$total_size_h${NC}"
+}
+
+delete_all_backups() {
+    shopt -s nullglob
+    local backups=("$BACKUP_DIR"/*.tar.gz)
+    shopt -u nullglob
+    [[ ${#backups[@]} -gt 0 ]] || { log_info "No backups found"; return 0; }
+    local count=0
+    local total_size=0
+    for backup in "${backups[@]}"; do
+        [[ -f "$backup" ]] || continue
+        local size=$(du -b "$backup" 2>/dev/null | cut -f1 || echo "0")
+        total_size=$((total_size + size))
+        ((count++))
+    done
+    local total_size_mb=$((total_size / 1024 / 1024))
+    local total_size_gb=$((total_size / 1024 / 1024 / 1024))
+    local total_size_h
+    if [[ $total_size_gb -gt 0 ]]; then
+        total_size_h="${total_size_gb}GB"
+    elif [[ $total_size_mb -gt 0 ]]; then
+        total_size_h="${total_size_mb}MB"
+    else
+        total_size_h="$((total_size / 1024))KB"
+    fi
+    echo -e "${YELLOW}⚠${NC} This will delete ${RED}ALL${NC} backups:"
+    echo -e "  - ${RED}$count${NC} backup files"
+    echo -e "  - Total size: ${RED}$total_size_h${NC}"
+    echo ""
+    read -rp "Are you sure? Type 'DELETE' to confirm: " confirm
+    [[ "$confirm" != "DELETE" ]] && { log_info "Operation cancelled"; return 0; }
+    log_info "Deleting all backups..."
+    local deleted=0
+    for backup in "${backups[@]}"; do
+        [[ -f "$backup" ]] || continue
+        rm -f "$backup" && ((deleted++)) || log_warn "Failed to delete: $(basename "$backup")"
+    done
+    [[ $deleted -gt 0 ]] && log_success "Deleted $deleted backup(s). Freed $total_size_h" || log_warn "No backups deleted"
 }
 
 health_check() {
@@ -394,19 +485,21 @@ show_menu() {
     echo "  5) Update Project"
     echo "  6) Backup Project"
     echo "  7) Restore Backup"
+    echo "  8) List Backups"
+    echo "  9) Delete All Backups"
     echo ""
     echo -e "${BLUE}Database:${NC}"
-    echo "  8) Update DB (Fresh Seed)"
+    echo " 10) Update DB (Fresh Seed)"
     echo ""
     echo -e "${BLUE}Monitoring:${NC}"
-    echo "  9) Health Check"
-    echo " 10) View Logs"
-    echo " 11) System Stats"
+    echo " 11) Health Check"
+    echo " 12) View Logs"
+    echo " 13) System Stats"
     echo ""
     echo -e "${BLUE}Docker:${NC}"
-    echo " 12) Docker Info"
-    echo " 13) View Logs"
-    echo " 14) Cleanup (Remove unused images/volumes)"
+    echo " 14) Docker Info"
+    echo " 15) View Logs"
+    echo " 16) Cleanup (Remove unused images/volumes)"
     echo ""
     echo -e "${YELLOW} 0) Exit${NC}"
     echo ""
@@ -419,13 +512,15 @@ show_menu() {
         5) update_project && pause ;;
         6) backup_project && pause ;;
         7) restore_backup && pause ;;
-        8) update_db && pause ;;
-        9) health_check && pause ;;
-        10) show_logs ;;
-        11) show_stats && pause ;;
-        12) docker_info && pause ;;
-        13) show_logs ;;
-        14) cleanup_docker && pause ;;
+        8) list_backups && pause ;;
+        9) delete_all_backups && pause ;;
+        10) update_db && pause ;;
+        11) health_check && pause ;;
+        12) show_logs ;;
+        13) show_stats && pause ;;
+        14) docker_info && pause ;;
+        15) show_logs ;;
+        16) cleanup_docker && pause ;;
         0) echo -e "${GREEN}Goodbye!${NC}" && exit 0 ;;
         *) log_error "Invalid option" && sleep 1 ;;
     esac
