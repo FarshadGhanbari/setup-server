@@ -340,6 +340,43 @@ docker_info() {
     docker info
 }
 
+cleanup_docker() {
+    echo -e "${YELLOW}⚠${NC} This will remove unused Docker resources:"
+    echo "  - Stopped containers"
+    echo "  - Unused images"
+    echo "  - Unused volumes"
+    echo "  - Unused networks"
+    echo "  - Build cache"
+    echo ""
+    read -rp "Continue? (y/N): " confirm
+    [[ "$confirm" != "y" && "$confirm" != "Y" ]] && return 0
+    
+    log_info "Cleaning up Docker resources..."
+    
+    log_info "Removing stopped containers..."
+    docker container prune -f >/dev/null 2>&1 && log_success "Stopped containers removed" || log_warn "No stopped containers"
+    
+    log_info "Removing unused images..."
+    local images_before=$(docker images -q | wc -l)
+    docker image prune -af >/dev/null 2>&1
+    local images_after=$(docker images -q | wc -l)
+    local removed=$((images_before - images_after))
+    [[ $removed -gt 0 ]] && log_success "Removed $removed unused images" || log_info "No unused images"
+    
+    log_info "Removing unused volumes..."
+    docker volume prune -f >/dev/null 2>&1 && log_success "Unused volumes removed" || log_warn "No unused volumes"
+    
+    log_info "Removing unused networks..."
+    docker network prune -f >/dev/null 2>&1 && log_success "Unused networks removed" || log_warn "No unused networks"
+    
+    log_info "Removing build cache..."
+    docker builder prune -af >/dev/null 2>&1 && log_success "Build cache removed" || log_warn "No build cache"
+    
+    log_info "Calculating freed space..."
+    local system_df=$(docker system df --format "{{.Size}}" 2>/dev/null | head -1 || echo "0B")
+    log_success "Cleanup completed! System usage: $system_df"
+}
+
 show_menu() {
     clear
     echo ""
@@ -369,6 +406,7 @@ show_menu() {
     echo -e "${BLUE}Docker:${NC}"
     echo " 12) Docker Info"
     echo " 13) View Logs"
+    echo " 14) Cleanup (Remove unused images/volumes)"
     echo ""
     echo -e "${YELLOW} 0) Exit${NC}"
     echo ""
@@ -387,6 +425,7 @@ show_menu() {
         11) show_stats && pause ;;
         12) docker_info && pause ;;
         13) show_logs ;;
+        14) cleanup_docker && pause ;;
         0) echo -e "${GREEN}Goodbye!${NC}" && exit 0 ;;
         *) log_error "Invalid option" && sleep 1 ;;
     esac
