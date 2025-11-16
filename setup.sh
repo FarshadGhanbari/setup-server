@@ -519,6 +519,10 @@ cleanup_docker() {
     log_success "Cleanup completed! System usage: $system_df"
 }
 
+persian_to_english() {
+    echo "$1" | sed 'y/۰۱۲۳۴۵۶۷۸۹/0123456789/'
+}
+
 show_menu() {
     clear
     echo ""
@@ -556,6 +560,7 @@ show_menu() {
     echo -e "${YELLOW} 0) Exit${NC}"
     echo ""
     read -rp "Select option: " choice
+    choice=$(persian_to_english "$choice")
     case $choice in
         1) github_auth && pause ;;
         2) renew_ssl && pause ;;
