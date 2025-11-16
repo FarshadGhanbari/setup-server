@@ -461,7 +461,10 @@ update_project() {
     local project=$(get_project) || { log_error "No project found. Install project first."; return 1; }
     local project_dir="$HOME/$project"
     [[ -d "$project_dir" ]] || { log_error "Project directory not found"; return 1; }
-    backup_project || log_warn "Backup failed, continuing anyway..."
+    read -rp "Create backup before update? (y/N): " backup_confirm
+    if [[ "$backup_confirm" == "y" || "$backup_confirm" == "Y" ]]; then
+        backup_project || log_warn "Backup failed, continuing anyway..."
+    fi
     cd "$project_dir" || return 1
     log_info "Updating project: $project"
     git pull || { log_error "Git pull failed"; return 1; }
