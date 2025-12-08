@@ -346,9 +346,9 @@ health_check() {
     local project_dir=$(get_project_dir) || return 1
     cd "$project_dir" || return 1
     log_info "Checking Docker containers..."
-    docker compose -f prod.docker-compose.yml ps
+    docker compose --env-file .env -f prod.docker-compose.yml ps
     log_info "Checking container health..."
-    docker compose -f prod.docker-compose.yml ps --format json | jq -r '.[] | "\(.Name): \(.Health // "N/A")"' 2>/dev/null || docker compose -f prod.docker-compose.yml ps
+    docker compose --env-file .env -f prod.docker-compose.yml ps --format json | jq -r '.[] | "\(.Name): \(.Health // "N/A")"' 2>/dev/null || docker compose --env-file .env -f prod.docker-compose.yml ps
 }
 
 show_logs() {
@@ -356,9 +356,9 @@ show_logs() {
     cd "$project_dir" || return 1
     read -rp "Enter container name (or 'all'): " container
     if [[ "$container" == "all" ]]; then
-        docker compose -f prod.docker-compose.yml logs --tail=100 -f
+        docker compose --env-file .env -f prod.docker-compose.yml logs --tail=100 -f
     else
-        docker compose -f prod.docker-compose.yml logs --tail=100 -f "$container"
+        docker compose --env-file .env -f prod.docker-compose.yml logs --tail=100 -f "$container"
     fi
 }
 
@@ -454,7 +454,7 @@ install_project() {
     cd "$project_dir" || return 1
     echo "$project" > "$PROJECT_FILE"
     log_info "Building and starting containers..."
-    docker compose -f prod.docker-compose.yml up -d --build --remove-orphans && log_success "Project installed successfully" || { log_error "Installation failed"; return 1; }
+    docker compose --env-file .env -f prod.docker-compose.yml up -d --build --remove-orphans && log_success "Project installed successfully" || { log_error "Installation failed"; return 1; }
 }
 
 update_project() {
@@ -469,7 +469,7 @@ update_project() {
     log_info "Updating project: $project"
     git pull || { log_error "Git pull failed"; return 1; }
     log_info "Rebuilding containers..."
-    docker compose -f prod.docker-compose.yml up -d --build --remove-orphans && log_success "Project updated successfully" || { log_error "Update failed"; return 1; }
+    docker compose --env-file .env -f prod.docker-compose.yml up -d --build --remove-orphans && log_success "Project updated successfully" || { log_error "Update failed"; return 1; }
 }
 
 update_db() {
@@ -478,7 +478,7 @@ update_db() {
     [[ "$confirm" != "y" && "$confirm" != "Y" ]] && return 0
     cd "$project_dir" || return 1
     log_info "Resetting database..."
-    docker compose -f prod.docker-compose.yml exec -T laravel php artisan db:fresh-seed && log_success "Database updated" || { log_error "Database update failed"; return 1; }
+    docker compose --env-file .env -f prod.docker-compose.yml exec -T laravel php artisan db:fresh-seed && log_success "Database updated" || { log_error "Database update failed"; return 1; }
 }
 
 docker_info() {
