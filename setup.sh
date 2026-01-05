@@ -232,7 +232,8 @@ get_project_dir() {
 docker_compose_cmd() {
     local compose_file="$PWD/modules/Primary/Docker/prod.docker-compose.yml"
     local env_file="$PWD/.env"
-    [[ -f "$env_file" ]] && docker compose --env-file "$env_file" -f "$compose_file" "$@" || docker compose -f "$compose_file" "$@"
+    [[ -f "$env_file" ]] || { log_error ".env not found"; return 1; }
+    docker compose --env-file "$env_file" -f "$compose_file" "$@"
 }
 
 backup_project() {
