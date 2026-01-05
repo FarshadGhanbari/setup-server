@@ -231,7 +231,7 @@ get_project_dir() {
 
 docker_compose_cmd() {
     local compose_file="./modules/Primary/Docker/prod.docker-compose.yml"
-    [[ -f .env ]] && docker compose --env-file .env -f "$compose_file" "$@" || docker compose -f "$compose_file" "$@"
+    docker compose --project-directory . -f "$compose_file" "$@"
 }
 
 backup_project() {
