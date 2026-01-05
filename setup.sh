@@ -230,8 +230,8 @@ get_project_dir() {
 }
 
 docker_compose_cmd() {
-    local compose_file="./modules/Primary/Docker/prod.docker-compose.yml"
-    docker compose --project-directory . -f "$compose_file" "$@"
+    local compose_file="$PWD/modules/Primary/Docker/prod.docker-compose.yml"
+    docker compose -f "$compose_file" "$@"
 }
 
 backup_project() {
