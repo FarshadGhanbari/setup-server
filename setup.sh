@@ -483,7 +483,7 @@ update_db() {
     [[ "$confirm" != "y" && "$confirm" != "Y" ]] && return 0
     cd "$project_dir" || return 1
     log_info "Resetting database..."
-    docker compose --env-file .env -f ./modules/Primary/Docker/prod.docker-compose.yml exec -T laravel php artisan db:fresh-seed && log_success "Database updated" || { log_error "Database update failed"; return 1; }
+    docker_compose_cmd exec -T laravel php artisan db:fresh-seed && log_success "Database updated" || { log_error "Database update failed"; return 1; }
 }
 
 docker_info() {
