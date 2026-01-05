@@ -229,6 +229,11 @@ get_project_dir() {
     echo "$HOME/$project"
 }
 
+docker_compose_cmd() {
+    local compose_file="./modules/Primary/Docker/prod.docker-compose.yml"
+    [[ -f .env ]] && docker compose --env-file .env -f "$compose_file" "$@" || docker compose -f "$compose_file" "$@"
+}
+
 backup_project() {
     local project=$(get_project) || { log_error "No project found"; return 1; }
     local project_dir="$HOME/$project"
@@ -346,9 +351,9 @@ health_check() {
     local project_dir=$(get_project_dir) || return 1
     cd "$project_dir" || return 1
     log_info "Checking Docker containers..."
-    docker compose --env-file .env -f ./modules/Primary/Docker/prod.docker-compose.yml ps
+    docker_compose_cmd ps
     log_info "Checking container health..."
-    docker compose --env-file .env -f ./modules/Primary/Docker/prod.docker-compose.yml ps --format json | jq -r '.[] | "\(.Name): \(.Health // "N/A")"' 2>/dev/null || docker compose --env-file .env -f ./modules/Primary/Docker/prod.docker-compose.yml ps
+    docker_compose_cmd ps --format json | jq -r '.[] | "\(.Name): \(.Health // "N/A")"' 2>/dev/null || docker_compose_cmd ps
 }
 
 show_logs() {
@@ -356,9 +361,9 @@ show_logs() {
     cd "$project_dir" || return 1
     read -rp "Enter container name (or 'all'): " container
     if [[ "$container" == "all" ]]; then
-        docker compose --env-file .env -f ./modules/Primary/Docker/prod.docker-compose.yml logs --tail=100 -f
+        docker_compose_cmd logs --tail=100 -f
     else
-        docker compose --env-file .env -f ./modules/Primary/Docker/prod.docker-compose.yml logs --tail=100 -f "$container"
+        docker_compose_cmd logs --tail=100 -f "$container"
     fi
 }
 
@@ -454,7 +459,7 @@ install_project() {
     cd "$project_dir" || return 1
     echo "$project" > "$PROJECT_FILE"
     log_info "Building and starting containers..."
-    docker compose --env-file .env -f ./modules/Primary/Docker/prod.docker-compose.yml up -d --build --remove-orphans && log_success "Project installed successfully" || { log_error "Installation failed"; return 1; }
+    docker_compose_cmd up -d --build --remove-orphans && log_success "Project installed successfully" || { log_error "Installation failed"; return 1; }
 }
 
 update_project() {
@@ -469,7 +474,7 @@ update_project() {
     log_info "Updating project: $project"
     git pull || { log_error "Git pull failed"; return 1; }
     log_info "Rebuilding containers..."
-    docker compose --env-file .env -f ./modules/Primary/Docker/prod.docker-compose.yml up -d --build --remove-orphans && log_success "Project updated successfully" || { log_error "Update failed"; return 1; }
+    docker_compose_cmd up -d --build --remove-orphans && log_success "Project updated successfully" || { log_error "Update failed"; return 1; }
 }
 
 update_db() {
