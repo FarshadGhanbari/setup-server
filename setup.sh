@@ -346,9 +346,9 @@ health_check() {
     local project_dir=$(get_project_dir) || return 1
     cd "$project_dir" || return 1
     log_info "Checking Docker containers..."
-    docker compose -f docker-compose.yml ps
+    dc ps
     log_info "Checking container health..."
-    docker compose -f docker-compose.yml ps --format json | jq -r '.[] | "\(.Name): \(.Health // "N/A")"' 2>/dev/null || docker compose -f docker-compose.yml ps
+    dc ps --format json | jq -r '.[] | "\(.Name): \(.Health // "N/A")"' 2>/dev/null || dc ps
 }
 
 show_logs() {
@@ -356,9 +356,9 @@ show_logs() {
     cd "$project_dir" || return 1
     read -rp "Enter container name (or 'all'): " container
     if [[ "$container" == "all" ]]; then
-        docker compose -f docker-compose.yml logs --tail=100 -f
+        dc logs --tail=100 -f
     else
-        docker compose -f docker-compose.yml logs --tail=100 -f "$container"
+        dc logs --tail=100 -f "$container"
     fi
 }
 
@@ -443,6 +443,16 @@ issue_ssl() {
     certbot certonly --standalone -d "$domain" -d "www.$domain" --agree-tos --email "$EMAIL" --non-interactive && log_success "SSL certificate issued" || { log_error "SSL issuance failed"; return 1; }
 }
 
+dc() {
+    local env_file="$PWD/.env"
+    local compose_file="$PWD/modules/Primary/Docker/prod.docker-compose.yml"
+    if [[ -f "$env_file" ]]; then
+        docker compose --env-file "$env_file" -f "$compose_file" "$@"
+    else
+        docker compose -f "$compose_file" "$@"
+    fi
+}
+
 install_project() {
     read -rp "Enter project name (GitHub repo): " project
     [[ -z "$project" ]] && { log_error "Project name is required"; return 1; }
@@ -454,7 +464,7 @@ install_project() {
     cd "$project_dir" || return 1
     echo "$project" > "$PROJECT_FILE"
     log_info "Building and starting containers..."
-    docker compose -f docker-compose.yml up -d --build --remove-orphans && log_success "Project installed successfully" || { log_error "Installation failed"; return 1; }
+    dc up -d --build --remove-orphans && log_success "Project installed successfully" || { log_error "Installation failed"; return 1; }
 }
 
 update_project() {
@@ -469,7 +479,7 @@ update_project() {
     log_info "Updating project: $project"
     git pull || { log_error "Git pull failed"; return 1; }
     log_info "Rebuilding containers..."
-    docker compose -f docker-compose.yml up -d --build --remove-orphans && log_success "Project updated successfully" || { log_error "Update failed"; return 1; }
+    dc up -d --build --remove-orphans && log_success "Project updated successfully" || { log_error "Update failed"; return 1; }
 }
 
 update_db() {
@@ -478,7 +488,7 @@ update_db() {
     [[ "$confirm" != "y" && "$confirm" != "Y" ]] && return 0
     cd "$project_dir" || return 1
     log_info "Resetting database..."
-    docker compose -f docker-compose.yml exec -T laravel php artisan migrateFreshAllSeed && log_success "Database updated" || { log_error "Database update failed"; return 1; }
+    dc exec -T laravel php artisan migrateFreshAllSeed && log_success "Database updated" || { log_error "Database update failed"; return 1; }
 }
 
 docker_info() {
