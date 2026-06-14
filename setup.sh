@@ -445,7 +445,7 @@ issue_ssl() {
 
 dc() {
     local env_file="$PWD/.env"
-    local compose_file="$PWD/modules/Primary/Docker/prod.docker-compose.yml"
+    local compose_file="$PWD/docker-compose.yml"
     if [[ -f "$env_file" ]]; then
         docker compose --env-file "$env_file" -f "$compose_file" "$@"
     else
