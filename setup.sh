@@ -444,7 +444,7 @@ issue_ssl() {
 }
 
 dc() {
-    local env_file="$PWD/.env"
+    local env_file="$PWD/laravel/.env"
     local compose_file="$PWD/docker-compose.yml"
     if [[ -f "$env_file" ]]; then
         docker compose --env-file "$env_file" -f "$compose_file" "$@"
