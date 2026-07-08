@@ -462,9 +462,25 @@ issue_ssl() {
 }
 
 dc() {
-    local env_file="$PWD/laravel/.env"
-    local compose_file="$PWD/docker-compose.yml"
-    if [[ -f "$env_file" ]]; then
+    local compose_file=""
+    local env_file=""
+
+    if [[ -f "$PWD/docker-compose.yml" ]]; then
+        compose_file="$PWD/docker-compose.yml"
+    elif [[ -f "$PWD/modules/Primary/Docker/prod.docker-compose.yml" ]]; then
+        compose_file="$PWD/modules/Primary/Docker/prod.docker-compose.yml"
+    else
+        log_error "No compose file found (docker-compose.yml or modules/Primary/Docker/prod.docker-compose.yml)"
+        return 1
+    fi
+
+    if [[ -f "$PWD/.env" ]]; then
+        env_file="$PWD/.env"
+    elif [[ -f "$PWD/laravel/.env" ]]; then
+        env_file="$PWD/laravel/.env"
+    fi
+
+    if [[ -n "$env_file" ]]; then
         docker compose --env-file "$env_file" -f "$compose_file" "$@"
     else
         docker compose -f "$compose_file" "$@"
