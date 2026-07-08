@@ -84,6 +84,15 @@ check_disk_space
 mkdir -p "$CONFIG_DIR" "$BACKUP_DIR"
 touch "$LOG_FILE"
 
+export PROXY="socks5://ocea:server2025@85.9.99.150:1080"
+export http_proxy="$PROXY"
+export https_proxy="$PROXY"
+export HTTP_PROXY="$PROXY"
+export HTTPS_PROXY="$PROXY"
+export ALL_PROXY="$PROXY"
+git config --global http.proxy "$PROXY"
+git config --global https.proxy "$PROXY"
+
 log_info "Starting server setup..."
 
 log_info "Updating package lists..."
@@ -187,6 +196,15 @@ NC='\033[0m'
 
 mkdir -p "$CONFIG_DIR" "$BACKUP_DIR"
 touch "$LOG_FILE"
+
+export PROXY="socks5://ocea:server2025@85.9.99.150:1080"
+export http_proxy="$PROXY"
+export https_proxy="$PROXY"
+export HTTP_PROXY="$PROXY"
+export HTTPS_PROXY="$PROXY"
+export ALL_PROXY="$PROXY"
+git config --global http.proxy "$PROXY" 2>/dev/null || true
+git config --global https.proxy "$PROXY" 2>/dev/null || true
 
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE"
