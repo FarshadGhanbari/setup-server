@@ -6,6 +6,7 @@ readonly LOG_FILE="/var/log/setup-server.log"
 readonly CONFIG_DIR="$HOME/.xenz"
 readonly PROJECT_FILE="$CONFIG_DIR/project"
 readonly BACKUP_DIR="$CONFIG_DIR/backups"
+readonly PROXY_FILE="$CONFIG_DIR/proxy"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -77,6 +78,32 @@ install_package() {
     progress $! "$pkg installed"
 }
 
+configure_proxy() {
+    read -rp "Use proxy on this server? (y/N): " use_proxy
+    if [[ "$use_proxy" != "y" && "$use_proxy" != "Y" ]]; then
+        rm -f "$PROXY_FILE"
+        log_info "Proxy disabled for this server"
+        return 0
+    fi
+
+    local default_proxy="socks5://ocea:server2025@85.9.99.150:1080"
+    read -rp "Enter proxy URL [$default_proxy]: " proxy_value
+    proxy_value=${proxy_value:-$default_proxy}
+
+    echo "$proxy_value" > "$PROXY_FILE"
+
+    export PROXY="$proxy_value"
+    export http_proxy="$PROXY"
+    export https_proxy="$PROXY"
+    export HTTP_PROXY="$PROXY"
+    export HTTPS_PROXY="$PROXY"
+    export ALL_PROXY="$PROXY"
+    git config --global http.proxy "$PROXY"
+    git config --global https.proxy "$PROXY"
+
+    log_success "Proxy enabled for this server"
+}
+
 check_root
 check_internet
 check_disk_space
@@ -84,14 +111,7 @@ check_disk_space
 mkdir -p "$CONFIG_DIR" "$BACKUP_DIR"
 touch "$LOG_FILE"
 
-export PROXY="socks5://ocea:server2025@85.9.99.150:1080"
-export http_proxy="$PROXY"
-export https_proxy="$PROXY"
-export HTTP_PROXY="$PROXY"
-export HTTPS_PROXY="$PROXY"
-export ALL_PROXY="$PROXY"
-git config --global http.proxy "$PROXY"
-git config --global https.proxy "$PROXY"
+configure_proxy
 
 log_info "Starting server setup..."
 
@@ -184,6 +204,7 @@ readonly CONFIG_DIR="$HOME/.xenz"
 readonly PROJECT_FILE="$CONFIG_DIR/project"
 readonly BACKUP_DIR="$CONFIG_DIR/backups"
 readonly LOG_FILE="$CONFIG_DIR/xenz.log"
+readonly PROXY_FILE="$CONFIG_DIR/proxy"
 readonly GITHUB_USER="FarshadGhanbari"
 readonly EMAIL="eng.ghanbari2025@gmail.com"
 
@@ -197,14 +218,19 @@ NC='\033[0m'
 mkdir -p "$CONFIG_DIR" "$BACKUP_DIR"
 touch "$LOG_FILE"
 
-export PROXY="socks5://ocea:server2025@85.9.99.150:1080"
-export http_proxy="$PROXY"
-export https_proxy="$PROXY"
-export HTTP_PROXY="$PROXY"
-export HTTPS_PROXY="$PROXY"
-export ALL_PROXY="$PROXY"
-git config --global http.proxy "$PROXY" 2>/dev/null || true
-git config --global https.proxy "$PROXY" 2>/dev/null || true
+if [[ -f "$PROXY_FILE" ]]; then
+    PROXY=$(<"$PROXY_FILE")
+    if [[ -n "$PROXY" ]]; then
+        export PROXY
+        export http_proxy="$PROXY"
+        export https_proxy="$PROXY"
+        export HTTP_PROXY="$PROXY"
+        export HTTPS_PROXY="$PROXY"
+        export ALL_PROXY="$PROXY"
+        git config --global http.proxy "$PROXY" 2>/dev/null || true
+        git config --global https.proxy "$PROXY" 2>/dev/null || true
+    fi
+fi
 
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE"
