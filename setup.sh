@@ -608,10 +608,12 @@ dc() {
 
     if [[ -f "$PWD/docker-compose.yml" ]]; then
         compose_file="$PWD/docker-compose.yml"
+    elif [[ -f "$PWD/prod.docker-compose.yml" ]]; then
+        compose_file="$PWD/prod.docker-compose.yml"
     elif [[ -f "$PWD/modules/Primary/Docker/prod.docker-compose.yml" ]]; then
         compose_file="$PWD/modules/Primary/Docker/prod.docker-compose.yml"
     else
-        log_error "No compose file found (docker-compose.yml or modules/Primary/Docker/prod.docker-compose.yml)"
+        log_error "No compose file found (docker-compose.yml, prod.docker-compose.yml, or modules/Primary/Docker/prod.docker-compose.yml)"
         return 1
     fi
 
