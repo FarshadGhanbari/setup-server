@@ -78,10 +78,36 @@ install_package() {
     progress $! "$pkg installed"
 }
 
+clear_git_proxy() {
+    git config --global --unset http.proxy 2>/dev/null || true
+    git config --global --unset https.proxy 2>/dev/null || true
+}
+
+test_proxy() {
+    local proxy_url="$1"
+    curl --proxy "$proxy_url" -fsSL --connect-timeout 5 --max-time 10 https://github.com -o /dev/null 2>/dev/null
+}
+
+apply_proxy_session() {
+    local proxy_url="$1"
+    export PROXY="$proxy_url"
+    export http_proxy="$PROXY"
+    export https_proxy="$PROXY"
+    export HTTP_PROXY="$PROXY"
+    export HTTPS_PROXY="$PROXY"
+    export ALL_PROXY="$PROXY"
+}
+
+disable_proxy() {
+    rm -f "$PROXY_FILE"
+    clear_git_proxy
+    unset PROXY http_proxy https_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY
+}
+
 configure_proxy() {
     read -rp "Use proxy on this server? (y/N): " use_proxy
     if [[ "$use_proxy" != "y" && "$use_proxy" != "Y" ]]; then
-        rm -f "$PROXY_FILE"
+        disable_proxy
         log_info "Proxy disabled for this server"
         return 0
     fi
@@ -90,17 +116,16 @@ configure_proxy() {
     read -rp "Enter proxy URL [$default_proxy]: " proxy_value
     proxy_value=${proxy_value:-$default_proxy}
 
+    log_info "Testing proxy connection..."
+    if ! test_proxy "$proxy_value"; then
+        disable_proxy
+        log_warn "Proxy unreachable, continuing without proxy"
+        return 0
+    fi
+
     echo "$proxy_value" > "$PROXY_FILE"
-
-    export PROXY="$proxy_value"
-    export http_proxy="$PROXY"
-    export https_proxy="$PROXY"
-    export HTTP_PROXY="$PROXY"
-    export HTTPS_PROXY="$PROXY"
-    export ALL_PROXY="$PROXY"
-    git config --global http.proxy "$PROXY"
-    git config --global https.proxy "$PROXY"
-
+    apply_proxy_session "$proxy_value"
+    clear_git_proxy
     log_success "Proxy enabled for this server"
 }
 
@@ -218,19 +243,107 @@ NC='\033[0m'
 mkdir -p "$CONFIG_DIR" "$BACKUP_DIR"
 touch "$LOG_FILE"
 
-if [[ -f "$PROXY_FILE" ]]; then
-    PROXY=$(<"$PROXY_FILE")
-    if [[ -n "$PROXY" ]]; then
-        export PROXY
-        export http_proxy="$PROXY"
-        export https_proxy="$PROXY"
-        export HTTP_PROXY="$PROXY"
-        export HTTPS_PROXY="$PROXY"
-        export ALL_PROXY="$PROXY"
-        git config --global http.proxy "$PROXY" 2>/dev/null || true
-        git config --global https.proxy "$PROXY" 2>/dev/null || true
+clear_git_proxy() {
+    git config --global --unset http.proxy 2>/dev/null || true
+    git config --global --unset https.proxy 2>/dev/null || true
+}
+
+test_proxy() {
+    local proxy_url="$1"
+    curl --proxy "$proxy_url" -fsSL --connect-timeout 5 --max-time 10 https://github.com -o /dev/null 2>/dev/null
+}
+
+apply_proxy_session() {
+    local proxy_url="$1"
+    export PROXY="$proxy_url"
+    export http_proxy="$PROXY"
+    export https_proxy="$PROXY"
+    export HTTP_PROXY="$PROXY"
+    export HTTPS_PROXY="$PROXY"
+    export ALL_PROXY="$PROXY"
+}
+
+disable_proxy() {
+    rm -f "$PROXY_FILE"
+    clear_git_proxy
+    unset PROXY http_proxy https_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY
+}
+
+load_proxy() {
+    if [[ ! -f "$PROXY_FILE" ]]; then
+        return 0
     fi
-fi
+
+    local proxy_url
+    proxy_url=$(<"$PROXY_FILE")
+    [[ -n "$proxy_url" ]] || return 0
+
+    if test_proxy "$proxy_url"; then
+        apply_proxy_session "$proxy_url"
+        log_info "Proxy active"
+        return 0
+    fi
+
+    log_warn "Proxy configured but unreachable, continuing without proxy"
+}
+
+git_cmd() {
+    if [[ -n "${PROXY:-}" ]]; then
+        git -c http.proxy="$PROXY" -c https.proxy="$PROXY" "$@"
+    else
+        git "$@"
+    fi
+}
+
+manage_proxy() {
+    if [[ -f "$PROXY_FILE" ]]; then
+        echo -e "${BLUE}Current proxy:${NC} $(<"$PROXY_FILE")"
+    else
+        echo -e "${BLUE}Proxy:${NC} disabled"
+    fi
+    echo ""
+    echo "  1) Enable proxy"
+    echo "  2) Disable proxy"
+    echo "  3) Test current proxy"
+    echo ""
+    read -rp "Select option: " proxy_choice
+    proxy_choice=$(persian_to_english "$proxy_choice")
+    case $proxy_choice in
+        1)
+            local default_proxy="socks5://ocea:server2025@85.9.99.150:1080"
+            read -rp "Enter proxy URL [$default_proxy]: " proxy_value
+            proxy_value=${proxy_value:-$default_proxy}
+            log_info "Testing proxy connection..."
+            if ! test_proxy "$proxy_value"; then
+                log_error "Proxy unreachable"
+                return 1
+            fi
+            echo "$proxy_value" > "$PROXY_FILE"
+            apply_proxy_session "$proxy_value"
+            clear_git_proxy
+            log_success "Proxy enabled"
+            ;;
+        2)
+            disable_proxy
+            log_success "Proxy disabled"
+            ;;
+        3)
+            if [[ ! -f "$PROXY_FILE" ]]; then
+                log_warn "Proxy is disabled"
+                return 0
+            fi
+            if test_proxy "$(<"$PROXY_FILE")"; then
+                log_success "Proxy is reachable"
+            else
+                log_error "Proxy is unreachable"
+            fi
+            ;;
+        *)
+            log_error "Invalid option"
+            return 1
+            ;;
+    esac
+}
 
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE"
@@ -255,6 +368,8 @@ log_warn() {
     echo -e "${YELLOW}⚠${NC} $*"
     log "WARN: $*"
 }
+
+load_proxy
 
 validate_domain() {
     [[ "$1" =~ ^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$ ]] || return 1
@@ -520,7 +635,7 @@ install_project() {
     local project_dir="$HOME/$project"
     [[ -d "$project_dir" ]] && { log_error "Project already exists"; return 1; }
     log_info "Cloning project: $project"
-    git clone "https://github.com/$GITHUB_USER/$project.git" "$project_dir" || { log_error "Clone failed"; return 1; }
+    git_cmd clone "https://github.com/$GITHUB_USER/$project.git" "$project_dir" || { log_error "Clone failed"; return 1; }
     cd "$project_dir" || return 1
     echo "$project" > "$PROJECT_FILE"
     log_info "Building and starting containers..."
@@ -537,7 +652,7 @@ update_project() {
     fi
     cd "$project_dir" || return 1
     log_info "Updating project: $project"
-    git pull || { log_error "Git pull failed"; return 1; }
+    git_cmd pull || { log_error "Git pull failed"; return 1; }
     log_info "Rebuilding containers..."
     dc up -d --build --remove-orphans && log_success "Project updated successfully" || { log_error "Update failed"; return 1; }
 }
@@ -629,6 +744,7 @@ show_menu() {
     echo " 15) Docker Info"
     echo " 16) View Logs"
     echo " 17) Cleanup (Remove unused images/volumes)"
+    echo " 18) Proxy Settings"
     echo ""
     echo -e "${YELLOW} 0) Exit${NC}"
     echo ""
@@ -652,6 +768,7 @@ show_menu() {
         15) docker_info && pause ;;
         16) show_logs ;;
         17) cleanup_docker && pause ;;
+        18) manage_proxy && pause ;;
         0) echo -e "${GREEN}Goodbye!${NC}" && exit 0 ;;
         *) log_error "Invalid option" && sleep 1 ;;
     esac
