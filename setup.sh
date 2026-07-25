@@ -892,11 +892,16 @@ build_frontend() {
     fi
 
     log_info "Building Nuxt (unpacksite) with node:22 container..."
+    local install_cmd="npm install"
+    if [[ -f "$project_dir/unpacksite/package-lock.json" ]]; then
+        install_cmd="npm ci"
+    fi
+
     docker run --rm \
         -v "$project_dir/unpacksite:/app" \
         -w /app \
         node:22-alpine \
-        sh -c "npm ci && npm run build" \
+        sh -c "$install_cmd && npm run build" \
         || { log_error "Frontend build failed"; return 1; }
 
     log_info "Syncing .output → site/ ..."
