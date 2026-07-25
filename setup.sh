@@ -823,6 +823,37 @@ build_frontend() {
         cp -a "$project_dir/unpacksite/.output/." "$project_dir/site/"
     fi
 
+    # site/ is gitignored except Dockerfile; always restore it after sync.
+    if [[ -f "$project_dir/site/Dockerfile" ]]; then
+        :
+    elif [[ -f "$project_dir/deploy/site.Dockerfile" ]]; then
+        cp "$project_dir/deploy/site.Dockerfile" "$project_dir/site/Dockerfile"
+    else
+        cat > "$project_dir/site/Dockerfile" <<'SITE_DOCKERFILE'
+FROM node:22-alpine
+
+LABEL maintainer="Farshad Ghanbari"
+
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+ENV NITRO_HOST=0.0.0.0
+ENV HOST=0.0.0.0
+
+WORKDIR /app/site
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["node","server/index.mjs"]
+SITE_DOCKERFILE
+    fi
+
+    if [[ ! -f "$project_dir/site/Dockerfile" ]]; then
+        log_error "site/Dockerfile is missing after sync"
+        return 1
+    fi
+
     log_success "Frontend built into site/"
 
     if [[ "$skip_prompt" == "1" ]]; then
