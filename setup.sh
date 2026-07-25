@@ -785,6 +785,58 @@ install_project() {
     dc up -d --build --remove-orphans && log_success "Project installed successfully" || { log_error "Installation failed"; return 1; }
 }
 
+build_frontend() {
+    local project_dir="${1:-}"
+    local skip_prompt="${2:-0}"
+
+    if [[ -z "$project_dir" ]]; then
+        project_dir=$(get_project_dir) || { log_error "No project found"; return 1; }
+    fi
+    cd "$project_dir" || return 1
+
+    if [[ ! -d "$project_dir/unpacksite" ]]; then
+        log_error "unpacksite/ not found"
+        return 1
+    fi
+
+    log_info "Building Nuxt (unpacksite → site/) with node:22..."
+    # Debian image avoids alpine/musl npm bugs; wipe local installs for a clean tree.
+    docker run --rm \
+        -e NODE_OPTIONS="--max-old-space-size=4096" \
+        -e npm_config_cache=/tmp/npm-cache \
+        -v "$project_dir/unpacksite:/app" \
+        -w /app \
+        node:22-bookworm-slim \
+        bash -lc 'rm -rf node_modules .nuxt .output /tmp/npm-cache && mkdir -p /tmp/npm-cache && npm install --no-audit --no-fund && npm run build' \
+        || { log_error "Frontend build failed"; return 1; }
+
+    if [[ ! -f "$project_dir/unpacksite/.output/nitro.json" && ! -f "$project_dir/unpacksite/.output/server/index.mjs" ]]; then
+        log_error "Build finished but unpacksite/.output is missing expected files"
+        return 1
+    fi
+
+    log_info "Syncing .output → site/ ..."
+    mkdir -p "$project_dir/site"
+    if command -v rsync >/dev/null 2>&1; then
+        rsync -a --delete --exclude Dockerfile "$project_dir/unpacksite/.output/" "$project_dir/site/"
+    else
+        find "$project_dir/site" -mindepth 1 ! -name Dockerfile -exec rm -rf {} + 2>/dev/null || true
+        cp -a "$project_dir/unpacksite/.output/." "$project_dir/site/"
+    fi
+
+    log_success "Frontend built into site/"
+
+    if [[ "$skip_prompt" == "1" ]]; then
+        return 0
+    fi
+
+    read -rp "Rebuild site container now? (Y/n): " rebuild
+    rebuild=${rebuild:-Y}
+    if [[ "$rebuild" == "y" || "$rebuild" == "Y" ]]; then
+        dc up -d --build site && log_success "site container rebuilt"
+    fi
+}
+
 update_project() {
     local project
     project=$(get_project) || { log_error "No project found. Install project first."; return 1; }
@@ -799,7 +851,8 @@ update_project() {
     git_cmd pull || { log_error "Git pull failed"; return 1; }
 
     if is_khabinja_project "$project_dir"; then
-        ensure_khabinja_site_build "$project_dir" || return 1
+        # Full update: pull + Nuxt build + all containers
+        build_frontend "$project_dir" 1 || return 1
     fi
 
     log_info "Rebuilding containers..."
@@ -881,46 +934,6 @@ update_db() {
     esac
 }
 
-build_frontend() {
-    local project_dir
-    project_dir=$(get_project_dir) || { log_error "No project found"; return 1; }
-    cd "$project_dir" || return 1
-
-    if [[ ! -d "$project_dir/unpacksite" ]]; then
-        log_error "unpacksite/ not found"
-        return 1
-    fi
-
-    log_info "Building Nuxt (unpacksite) with node:22 container..."
-    local install_cmd="npm install"
-    if [[ -f "$project_dir/unpacksite/package-lock.json" ]]; then
-        install_cmd="npm ci"
-    fi
-
-    docker run --rm \
-        -v "$project_dir/unpacksite:/app" \
-        -w /app \
-        node:22-alpine \
-        sh -c "$install_cmd && npm run build" \
-        || { log_error "Frontend build failed"; return 1; }
-
-    log_info "Syncing .output → site/ ..."
-    mkdir -p "$project_dir/site"
-    if command -v rsync >/dev/null 2>&1; then
-        rsync -a --delete --exclude Dockerfile "$project_dir/unpacksite/.output/" "$project_dir/site/"
-    else
-        find "$project_dir/site" -mindepth 1 ! -name Dockerfile -exec rm -rf {} + 2>/dev/null || true
-        cp -a "$project_dir/unpacksite/.output/." "$project_dir/site/"
-    fi
-
-    log_success "Frontend built into site/"
-    read -rp "Rebuild site container now? (Y/n): " rebuild
-    rebuild=${rebuild:-Y}
-    if [[ "$rebuild" == "y" || "$rebuild" == "Y" ]]; then
-        dc up -d --build site && log_success "site container rebuilt"
-    fi
-}
-
 docker_info() {
     docker info
 }
@@ -981,7 +994,7 @@ show_menu() {
     echo ""
     echo -e "${BLUE}Project Management:${NC}"
     echo "  5) Install Project"
-    echo "  6) Update Project"
+    echo "  6) Update Project (git pull + build site + compose)"
     echo "  7) Backup Project"
     echo "  8) Restore Backup"
     echo "  9) List Backups"
@@ -1000,7 +1013,7 @@ show_menu() {
     echo " 16) View Logs"
     echo " 17) Cleanup (Remove unused images/volumes)"
     echo " 18) Proxy Settings"
-    echo " 19) Build Frontend (Nuxt → site)"
+    echo " 19) Build Frontend only (Nuxt → site)"
     echo ""
     echo -e "${YELLOW} 0) Exit${NC}"
     echo ""
