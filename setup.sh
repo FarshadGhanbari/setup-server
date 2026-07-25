@@ -799,15 +799,14 @@ build_frontend() {
         return 1
     fi
 
-    log_info "Building Nuxt (unpacksite → site/) with node:22..."
-    # Debian image avoids alpine/musl npm bugs; wipe local installs for a clean tree.
+    log_info "Building Nuxt (unpacksite → site/) with pnpm + node:22..."
+    # npm arborist crashes on this tree (edgesOut); pnpm + lockfile is reliable.
     docker run --rm \
         -e NODE_OPTIONS="--max-old-space-size=4096" \
-        -e npm_config_cache=/tmp/npm-cache \
         -v "$project_dir/unpacksite:/app" \
         -w /app \
         node:22-bookworm-slim \
-        bash -lc 'rm -rf node_modules .nuxt .output /tmp/npm-cache && mkdir -p /tmp/npm-cache && npm install --no-audit --no-fund && npm run build' \
+        bash -lc 'corepack enable && corepack prepare pnpm@9.15.9 --activate && rm -rf node_modules .nuxt .output && if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm install; fi && pnpm run build' \
         || { log_error "Frontend build failed"; return 1; }
 
     if [[ ! -f "$project_dir/unpacksite/.output/nitro.json" && ! -f "$project_dir/unpacksite/.output/server/index.mjs" ]]; then
