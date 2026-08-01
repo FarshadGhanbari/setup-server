@@ -78,6 +78,38 @@ install_package() {
     progress $! "$pkg installed"
 }
 
+detect_os() {
+    if [[ -f /etc/os-release ]]; then
+        # shellcheck source=/dev/null
+        . /etc/os-release
+        OS_ID="${ID:-}"
+        OS_CODENAME="${VERSION_CODENAME:-}"
+    else
+        OS_ID=""
+        OS_CODENAME=""
+    fi
+
+    if [[ -z "$OS_CODENAME" ]] && command -v lsb_release >/dev/null 2>&1; then
+        OS_CODENAME=$(lsb_release -cs 2>/dev/null || true)
+    fi
+
+    case "$OS_ID" in
+        ubuntu)
+            DOCKER_DISTRO="ubuntu"
+            ;;
+        debian)
+            DOCKER_DISTRO="debian"
+            ;;
+        *)
+            DOCKER_DISTRO="debian"
+            log_warn "Unknown OS ($OS_ID), using Debian Docker repo"
+            ;;
+    esac
+
+    [[ -n "$OS_CODENAME" ]] || { log_error $LINENO 1 "Could not detect OS codename"; exit 1; }
+    log_info "Detected OS: $OS_ID ($OS_CODENAME), Docker repo: $DOCKER_DISTRO"
+}
+
 clear_git_proxy() {
     git config --global --unset http.proxy 2>/dev/null || true
     git config --global --unset https.proxy 2>/dev/null || true
@@ -137,6 +169,7 @@ mkdir -p "$CONFIG_DIR" "$BACKUP_DIR"
 touch "$LOG_FILE"
 
 configure_proxy
+detect_os
 
 log_info "Starting server setup..."
 
@@ -145,17 +178,25 @@ apt update -y >/dev/null 2>&1 &
 progress $! "Package lists updated"
 
 log_info "Installing base packages..."
-apt install -y ca-certificates curl gnupg lsb-release software-properties-common ufw fail2ban htop apache2-utils rsync >/dev/null 2>&1 &
+BASE_PKGS=(ca-certificates curl gnupg lsb-release ufw fail2ban htop apache2-utils rsync)
+if [[ "$OS_ID" == "ubuntu" ]]; then
+    BASE_PKGS+=(software-properties-common)
+fi
+apt install -y "${BASE_PKGS[@]}" >/dev/null 2>&1 &
 progress $! "Base packages installed"
 
 if ! command -v docker >/dev/null 2>&1; then
-    log_info "Installing Docker..."
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/trusted.gpg.d/docker.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/trusted.gpg.d/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list >/dev/null
+    log_info "Installing Docker for $DOCKER_DISTRO ($OS_CODENAME)..."
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL "https://download.docker.com/linux/${DOCKER_DISTRO}/gpg" | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    chmod a+r /etc/apt/keyrings/docker.gpg
+    rm -f /etc/apt/sources.list.d/docker.list /etc/apt/trusted.gpg.d/docker.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/${DOCKER_DISTRO} ${OS_CODENAME} stable" | tee /etc/apt/sources.list.d/docker.list >/dev/null
     apt update -y >/dev/null 2>&1
-    apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin >/dev/null 2>&1 &
+    apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin >/dev/null 2>&1 &
     progress $! "Docker installed"
     usermod -aG docker "$SUDO_USER" 2>/dev/null || true
+    systemctl enable --now docker >/dev/null 2>&1 || true
     log_success "Docker installed successfully"
 else
     log_info "Docker already installed"

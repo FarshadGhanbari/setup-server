@@ -1,0 +1,984 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "setup.sh",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "_origin": "ast",
+      "id": "setup",
+      "community": 1,
+      "community_name": "setup.sh",
+      "norm_label": "setup.sh"
+    },
+    {
+      "label": "setup.sh script",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "_origin": "ast",
+      "id": "setup_sh__entry",
+      "community": 0,
+      "community_name": "setup.sh script",
+      "norm_label": "setup.sh script"
+    },
+    {
+      "label": "LOG_FILE",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L5",
+      "metadata": {
+        "language": "bash",
+        "kind": "code"
+      },
+      "_origin": "ast",
+      "id": "setup_log_file",
+      "community": 1,
+      "community_name": "setup.sh",
+      "norm_label": "log_file"
+    },
+    {
+      "label": "CONFIG_DIR",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L6",
+      "metadata": {
+        "language": "bash",
+        "kind": "code"
+      },
+      "_origin": "ast",
+      "id": "setup_config_dir",
+      "community": 1,
+      "community_name": "setup.sh",
+      "norm_label": "config_dir"
+    },
+    {
+      "label": "PROJECT_FILE",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L7",
+      "metadata": {
+        "language": "bash",
+        "kind": "code"
+      },
+      "_origin": "ast",
+      "id": "setup_project_file",
+      "community": 1,
+      "community_name": "setup.sh",
+      "norm_label": "project_file"
+    },
+    {
+      "label": "BACKUP_DIR",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L8",
+      "metadata": {
+        "language": "bash",
+        "kind": "code"
+      },
+      "_origin": "ast",
+      "id": "setup_backup_dir",
+      "community": 1,
+      "community_name": "setup.sh",
+      "norm_label": "backup_dir"
+    },
+    {
+      "label": "PROXY_FILE",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L9",
+      "metadata": {
+        "language": "bash",
+        "kind": "code"
+      },
+      "_origin": "ast",
+      "id": "setup_proxy_file",
+      "community": 1,
+      "community_name": "setup.sh",
+      "norm_label": "proxy_file"
+    },
+    {
+      "label": "log()",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L18",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "setup_log",
+      "community": 3,
+      "community_name": "log",
+      "norm_label": "log()"
+    },
+    {
+      "label": "log_info()",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L26",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "setup_log_info",
+      "community": 0,
+      "community_name": "setup.sh script",
+      "norm_label": "log_info()"
+    },
+    {
+      "label": "log_success()",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L31",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "setup_log_success",
+      "community": 3,
+      "community_name": "log",
+      "norm_label": "log_success()"
+    },
+    {
+      "label": "log_warn()",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L36",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "setup_log_warn",
+      "community": 3,
+      "community_name": "log",
+      "norm_label": "log_warn()"
+    },
+    {
+      "label": "log_error()",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L41",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "setup_log_error",
+      "community": 0,
+      "community_name": "setup.sh script",
+      "norm_label": "log_error()"
+    },
+    {
+      "label": "check_root()",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L47",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "setup_check_root",
+      "community": 0,
+      "community_name": "setup.sh script",
+      "norm_label": "check_root()"
+    },
+    {
+      "label": "check_disk_space()",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L51",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "setup_check_disk_space",
+      "community": 3,
+      "community_name": "log",
+      "norm_label": "check_disk_space()"
+    },
+    {
+      "label": "check_internet()",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L57",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "setup_check_internet",
+      "community": 0,
+      "community_name": "setup.sh script",
+      "norm_label": "check_internet()"
+    },
+    {
+      "label": "progress()",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L61",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "setup_progress",
+      "community": 0,
+      "community_name": "setup.sh script",
+      "norm_label": "progress()"
+    },
+    {
+      "label": "install_package()",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L74",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "setup_install_package",
+      "community": 0,
+      "community_name": "setup.sh script",
+      "norm_label": "install_package()"
+    },
+    {
+      "label": "detect_os()",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L81",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "setup_detect_os",
+      "community": 0,
+      "community_name": "setup.sh script",
+      "norm_label": "detect_os()"
+    },
+    {
+      "label": "clear_git_proxy()",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L113",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "setup_clear_git_proxy",
+      "community": 2,
+      "community_name": "configure_proxy",
+      "norm_label": "clear_git_proxy()"
+    },
+    {
+      "label": "test_proxy()",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L118",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "setup_test_proxy",
+      "community": 2,
+      "community_name": "configure_proxy",
+      "norm_label": "test_proxy()"
+    },
+    {
+      "label": "apply_proxy_session()",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L123",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "setup_apply_proxy_session",
+      "community": 2,
+      "community_name": "configure_proxy",
+      "norm_label": "apply_proxy_session()"
+    },
+    {
+      "label": "disable_proxy()",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L133",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "setup_disable_proxy",
+      "community": 2,
+      "community_name": "configure_proxy",
+      "norm_label": "disable_proxy()"
+    },
+    {
+      "label": "configure_proxy()",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L139",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "setup_configure_proxy",
+      "community": 2,
+      "community_name": "configure_proxy",
+      "norm_label": "configure_proxy()"
+    },
+    {
+      "label": "final_summary()",
+      "file_type": "code",
+      "source_file": "setup.sh",
+      "source_location": "L249",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "setup_final_summary",
+      "community": 3,
+      "community_name": "log",
+      "norm_label": "final_summary()"
+    }
+  ],
+  "links": [
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L123",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_apply_proxy_session",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_backup_dir",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L51",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_check_disk_space",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L57",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_check_internet",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L47",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_check_root",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L113",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_clear_git_proxy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_config_dir",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L139",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_configure_proxy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L81",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_detect_os",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L133",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_disable_proxy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L249",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_final_summary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L74",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_install_package",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_log",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L41",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_log_error",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_log_file",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L26",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_log_info",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L31",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_log_success",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L36",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_log_warn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L61",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_progress",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_project_file",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_proxy_file",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L118",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "setup",
+      "target": "setup_test_proxy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L166",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_sh__entry",
+      "target": "setup_check_disk_space",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L165",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_sh__entry",
+      "target": "setup_check_internet",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L164",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_sh__entry",
+      "target": "setup_check_root",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L171",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_sh__entry",
+      "target": "setup_configure_proxy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L172",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_sh__entry",
+      "target": "setup_detect_os",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L229",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_sh__entry",
+      "target": "setup_install_package",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L174",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_sh__entry",
+      "target": "setup_log_info",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L200",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_sh__entry",
+      "target": "setup_log_success",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L178",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_sh__entry",
+      "target": "setup_progress",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L43",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_log_error",
+      "target": "setup_log",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L28",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_log_info",
+      "target": "setup_log",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L33",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_log_success",
+      "target": "setup_log",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L38",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_log_warn",
+      "target": "setup_log",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L143",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_configure_proxy",
+      "target": "setup_log_info",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L110",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_detect_os",
+      "target": "setup_log_info",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L76",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_install_package",
+      "target": "setup_log_info",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L161",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_configure_proxy",
+      "target": "setup_log_success",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L251",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_final_summary",
+      "target": "setup_log_success",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L54",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_check_disk_space",
+      "target": "setup_log_warn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L154",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_configure_proxy",
+      "target": "setup_log_warn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L105",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_detect_os",
+      "target": "setup_log_warn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L58",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_check_internet",
+      "target": "setup_log_error",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L48",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_check_root",
+      "target": "setup_log_error",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L109",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_detect_os",
+      "target": "setup_log_error",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L78",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_install_package",
+      "target": "setup_progress",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L160",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_configure_proxy",
+      "target": "setup_clear_git_proxy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L135",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_disable_proxy",
+      "target": "setup_clear_git_proxy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L152",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_configure_proxy",
+      "target": "setup_test_proxy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L159",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_configure_proxy",
+      "target": "setup_apply_proxy_session",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L142",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_configure_proxy",
+      "target": "setup_disable_proxy",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "built_at_commit": "6c0db0fe3123f7ff8d8aee507887e366c9c41954"
+}
