@@ -1,16 +1,16 @@
-# Graph Report - setup-server  (2026-08-01)
+# Graph Report - setup-server  (2026-08-08)
 
 ## Corpus Check
-- 1 files · ~4,463 words
+- 1 files · ~4,532 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 24 nodes · 53 edges · 4 communities
+- 24 nodes · 55 edges · 4 communities
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6c0db0fe`
+- Built from commit: `182f5fd7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -21,13 +21,13 @@
 - log
 
 ## God Nodes (most connected - your core abstractions)
-1. `setup.sh script` - 10 edges
+1. `setup.sh script` - 12 edges
 2. `configure_proxy()` - 9 edges
 3. `log_info()` - 6 edges
-4. `log()` - 5 edges
-5. `log_success()` - 5 edges
-6. `log_warn()` - 5 edges
-7. `log_error()` - 5 edges
+4. `log_warn()` - 6 edges
+5. `log_error()` - 6 edges
+6. `log()` - 5 edges
+7. `log_success()` - 5 edges
 8. `detect_os()` - 5 edges
 9. `install_package()` - 4 edges
 10. `check_root()` - 3 edges
@@ -46,7 +46,7 @@
 ## Communities (4 total, 0 thin omitted)
 
 ### Community 0 - "setup.sh script"
-Cohesion: 0.43
+Cohesion: 0.46
 Nodes (8): check_internet(), check_root(), detect_os(), install_package(), log_error(), log_info(), progress(), setup.sh script
 
 ### Community 1 - "setup.sh"
@@ -69,10 +69,10 @@ Nodes (5): check_disk_space(), final_summary(), log(), log_success(), log_warn()
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `setup.sh script` connect `setup.sh script` to `setup.sh`, `configure_proxy`, `log`?**
-  _High betweenness centrality (0.054) - this node is a cross-community bridge._
+  _High betweenness centrality (0.075) - this node is a cross-community bridge._
 - **Why does `configure_proxy()` connect `configure_proxy` to `setup.sh script`, `setup.sh`, `log`?**
-  _High betweenness centrality (0.046) - this node is a cross-community bridge._
+  _High betweenness centrality (0.044) - this node is a cross-community bridge._
 - **Why does `log_error()` connect `setup.sh script` to `setup.sh`, `log`?**
-  _High betweenness centrality (0.009) - this node is a cross-community bridge._
+  _High betweenness centrality (0.010) - this node is a cross-community bridge._
 - **What connects `LOG_FILE`, `CONFIG_DIR`, `PROJECT_FILE` to the rest of the system?**
   _5 weakly-connected nodes found - possible documentation gaps or missing edges._

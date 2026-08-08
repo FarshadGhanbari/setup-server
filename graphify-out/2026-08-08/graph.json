@@ -352,7 +352,7 @@
       "label": "final_summary()",
       "file_type": "code",
       "source_file": "setup.sh",
-      "source_location": "L249",
+      "source_location": "L260",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -479,7 +479,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "setup.sh",
-      "source_location": "L249",
+      "source_location": "L260",
       "weight": 1.0,
       "_origin": "ast",
       "source": "setup",
@@ -682,12 +682,24 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "setup.sh",
-      "source_location": "L229",
+      "source_location": "L240",
       "weight": 1.0,
       "context": "call",
       "_origin": "ast",
       "source": "setup_sh__entry",
       "target": "setup_install_package",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L204",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_sh__entry",
+      "target": "setup_log_error",
       "confidence_score": 1.0
     },
     {
@@ -706,12 +718,24 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "setup.sh",
-      "source_location": "L200",
+      "source_location": "L205",
       "weight": 1.0,
       "context": "call",
       "_origin": "ast",
       "source": "setup_sh__entry",
       "target": "setup_log_success",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "setup.sh",
+      "source_location": "L201",
+      "weight": 1.0,
+      "context": "call",
+      "_origin": "ast",
+      "source": "setup_sh__entry",
+      "target": "setup_log_warn",
       "confidence_score": 1.0
     },
     {
@@ -826,7 +850,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "setup.sh",
-      "source_location": "L251",
+      "source_location": "L262",
       "weight": 1.0,
       "context": "call",
       "_origin": "ast",
@@ -980,5 +1004,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "6c0db0fe3123f7ff8d8aee507887e366c9c41954"
+  "built_at_commit": "182f5fd7ac3999f75b81f41c4197d159a6c2ed86"
 }
