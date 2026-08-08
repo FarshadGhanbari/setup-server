@@ -186,18 +186,29 @@ apt install -y "${BASE_PKGS[@]}" >/dev/null 2>&1 &
 progress $! "Base packages installed"
 
 if ! command -v docker >/dev/null 2>&1; then
-    log_info "Installing Docker for $DOCKER_DISTRO ($OS_CODENAME)..."
+    log_info "Installing Docker..."
+    rm -f /etc/apt/keyrings/docker.gpg /etc/apt/sources.list.d/docker.list /etc/apt/trusted.gpg.d/docker.gpg /tmp/docker.gpg
     install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL "https://download.docker.com/linux/${DOCKER_DISTRO}/gpg" | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    chmod a+r /etc/apt/keyrings/docker.gpg
-    rm -f /etc/apt/sources.list.d/docker.list /etc/apt/trusted.gpg.d/docker.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/${DOCKER_DISTRO} ${OS_CODENAME} stable" | tee /etc/apt/sources.list.d/docker.list >/dev/null
-    apt update -y >/dev/null 2>&1
-    apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin >/dev/null 2>&1 &
-    progress $! "Docker installed"
-    usermod -aG docker "$SUDO_USER" 2>/dev/null || true
+
+    if curl -fsSL "https://download.docker.com/linux/${DOCKER_DISTRO}/gpg" -o /tmp/docker.gpg; then
+        gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg /tmp/docker.gpg
+        chmod a+r /etc/apt/keyrings/docker.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/${DOCKER_DISTRO} ${OS_CODENAME} stable" | tee /etc/apt/sources.list.d/docker.list >/dev/null
+        apt update -y >/dev/null 2>&1
+        apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin >/dev/null 2>&1 &
+        progress $! "Docker installed"
+    else
+        log_warn "Official Docker repo blocked. Falling back to distro docker.io..."
+        apt install -y docker.io docker-compose-v2 >/dev/null 2>&1 \
+            || apt install -y docker.io docker-compose >/dev/null 2>&1 \
+            || { log_error $LINENO 1 "Docker install failed"; exit 1; }
+        log_success "docker.io installed"
+    fi
+
+    usermod -aG docker "${SUDO_USER:-root}" 2>/dev/null || true
     systemctl enable --now docker >/dev/null 2>&1 || true
-    log_success "Docker installed successfully"
+    command -v docker >/dev/null 2>&1 && log_success "Docker installed successfully" \
+        || { log_error $LINENO 1 "Docker binary not found after install"; exit 1; }
 else
     log_info "Docker already installed"
 fi
