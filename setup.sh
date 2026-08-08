@@ -39,8 +39,17 @@ log_warn() {
 }
 
 log_error() {
-    echo -e "${RED}✗${NC} Error on line $1. Exit code: $2" >&2
-    log "ERROR" "Line $1, Exit code: $2"
+    local line=$1
+    local code=${2:-1}
+    shift 2 || true
+    local message="${*:-}"
+    if [[ -n "$message" ]]; then
+        echo -e "${RED}✗${NC} $message (line $line, exit $code)" >&2
+        log "ERROR" "Line $line, Exit code: $code — $message"
+    else
+        echo -e "${RED}✗${NC} Error on line $line. Exit code: $code" >&2
+        log "ERROR" "Line $line, Exit code: $code"
+    fi
 }
 trap 'log_error $LINENO $?' ERR
 
@@ -54,8 +63,29 @@ check_disk_space() {
     [[ $available -gt $required ]] || { log_warn "Low disk space. At least 5GB recommended"; return 1; }
 }
 
+# Many cloud VMs block ICMP; prefer TCP/HTTPS (same path git/apt use).
 check_internet() {
-    ping -c 1 -W 2 8.8.8.8 >/dev/null 2>&1 || { log_error $LINENO 1 "No internet connection"; exit 1; }
+    if command -v curl >/dev/null 2>&1; then
+        curl -fsS --connect-timeout 5 --max-time 10 -o /dev/null https://github.com 2>/dev/null && return 0
+        curl -fsS --connect-timeout 5 --max-time 10 -o /dev/null https://1.1.1.1 2>/dev/null && return 0
+    fi
+    if command -v wget >/dev/null 2>&1; then
+        wget -q --timeout=5 --spider https://github.com 2>/dev/null && return 0
+        wget -q --timeout=5 --spider https://1.1.1.1 2>/dev/null && return 0
+    fi
+    # Bash /dev/tcp — no curl/wget required during early bootstrap
+    if (echo >/dev/tcp/1.1.1.1/443) >/dev/null 2>&1; then
+        return 0
+    fi
+    if (echo >/dev/tcp/8.8.8.8/53) >/dev/null 2>&1; then
+        return 0
+    fi
+    # Last resort: ICMP (often filtered on VPS)
+    if ping -c 1 -W 2 8.8.8.8 >/dev/null 2>&1; then
+        return 0
+    fi
+    log_error $LINENO 1 "No internet connection (HTTPS/TCP checks failed; ICMP may be blocked)"
+    exit 1
 }
 
 progress() {
